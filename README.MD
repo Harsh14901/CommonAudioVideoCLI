@@ -19,7 +19,7 @@ To run this project you need to have python 3.6 or higher installed
 - To run locally you will also need to clone the server repo in the same directory in which CommonAudioVideoCLI is.
 
 ```bash
-git clone https://github.com/Harsh14901/CommonAudioVideoServer.git local
+git clone https://github.com/devclub-iitd/CommonAudioVideoServer.git local
 ```
 
 - Installing dependencies

@@ -29,7 +29,6 @@ def get_multiplier(quality):
 
 def extract(path, quality="medium"):
     """ Extractor function utilizing ffmpeg to extract audio from a given video file """
-
     try:
         file = ffmpeg.input(path)
         output_path = path[:-3] + "ogg"
@@ -69,24 +68,17 @@ def extract(path, quality="medium"):
 
 
 def get_duration(file):
+    file = os.path.abspath(file)
     cmd = ("ffmpeg -i %s" % file).split()
     cmd[2] = cmd[2].replace("%20", " ")
-
-    time_str = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ).communicate()
-    time_str = re.search(
-        "Duration: (.*), start", time_str[0].decode().replace("%20", " ")
-    ).groups()[0]
-    hours, minutes, seconds = time_str.split(":")
-    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
 
     time_str = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()
     try:
         time_str = re.search('Duration: (.*), start', time_str[0].decode().replace('%20',' ')).groups()[0]
         hours, minutes, seconds = time_str.split(':')
         return int(hours)*3600 + int(minutes)*60 + float(seconds)
-    except:
+    except Exception as e:
+        print(e)
         return 0
     
     

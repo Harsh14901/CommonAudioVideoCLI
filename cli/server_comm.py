@@ -6,17 +6,19 @@ from util import path2title, get_interface
 from termcolor import colored
 
 SERVER_ADDR = "localhost"
-ARGS = {}
+# ARGS = {}
 
 
 # this is used internally by ServerConnection
 class VLC_signals(socketio.ClientNamespace):
-    def bind(self):
+    def bind(self, args):
         """ Binds the player instance to this class instance. """
 
-        from vlc_comm import player
+        from vlc_comm import VLCplayer
 
-        self.player = player
+        self.player = VLCplayer()
+        self.ARGS = args
+
 
     """ Functions with name like on_event are executed when a signal named 'event' is recieved from the server. """
 
@@ -54,17 +56,23 @@ class VLC_signals(socketio.ClientNamespace):
         self.roomId = args[0]["roomId"]
 
         url = "http://%s:5000/client/stream/?roomId=%s"
-        if ARGS["web"]:
+        if self.ARGS["web"]:
             url = url % (SERVER_ADDR, self.roomId)
         else:
             addrs = psutil.net_if_addrs()
-            interface = get_interface()
-            local_addr = addrs[interface][0].address  # modify
+            # interface = get_interface()
+            local_addr = None
+            for addr in addrs['Wi-Fi']:
+                if(addr.family == 2):
+                    local_addr = addr.address
+            if(not local_addr):
+                print(colored('red', 'Unable to find your local address'))
+                local_addr = input(colored('blue', 'Please input your local IP Address:'))
             url = url % (local_addr, self.roomId)
         from util import print_url
 
         print_url(url)
-        if ARGS["qr"]:
+        if self.ARGS["qr"]:
             from util import print_qr
 
             print(f"\n[{colored('$','blue')}] Or scan the QR code given below")
@@ -73,11 +81,24 @@ class VLC_signals(socketio.ClientNamespace):
 
 class ServerConnection:
     # Class that handles all connections to the server
-    def __init__(self):
-        self.sio = socketio.Client()
-        self.sio.connect("http://localhost:5000")
-        self.tracks = {}
-
+    server_instance = None
+    def __init__(self, args=None):
+        if(ServerConnection.server_instance is not None):
+            self = ServerConnection.server_instance
+        else:
+            try:
+                self.ARGS = {}
+                self.ARGS['web'] = args.web
+                self.ARGS['qr'] = args.qr
+                self.ARGS['onlyHost'] = args.onlyHost
+            except:
+                pass
+            
+            self.sio = socketio.Client()
+            self.sio.connect("http://localhost:5000")
+            self.tracks = {}
+            
+            ServerConnection.server_instance = self
         # For testing purposes...
         # self.trackId = '5ed554389cd979784f6926e3'   # Bella-Caio
         # self.trackId = '5ed88aae25f4787bea4cc07f'     # Dark
@@ -91,7 +112,7 @@ class ServerConnection:
         """ Establish connection to the server and start listening for signals from the server """
 
         self.signals = VLC_signals("/")
-        self.signals.bind()
+        self.signals.bind(args=self.ARGS)
         self.sio.register_namespace(self.signals)
 
     def track_change(self,videoPath,state):
@@ -112,7 +133,7 @@ class ServerConnection:
 
     def create_room(self):
         self.send('createRoom',{
-            "onlyHost": ARGS["onlyHost"]
+            "onlyHost": self.ARGS["onlyHost"]
         })
 
     def upload(self, videoPath ,audioPath):
@@ -131,8 +152,3 @@ class ServerConnection:
     def addAudioPath(self, videoPath, audioPath):
         self.tracks[videoPath] = ("audioPath", audioPath)
 
-
-def set_vars(args):
-    ARGS["web"] = args.web
-    ARGS["qr"] = args.qr
-    ARGS["onlyHost"] = args.onlyHost

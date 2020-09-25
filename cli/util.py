@@ -21,8 +21,8 @@ def wait_until_error(f, timeout=0.5):
             try:
                 return f(*args, **kwargs)
             except Exception as e:
-                if e or not e:
-                    continue
+                # print(e)
+                pass
 
     return inner
 
@@ -67,7 +67,7 @@ def print_qr(url):
 def get_videos(path, clear_files):
 
     if os.path.isfile(path):
-        mime = Magic(mime=True).from_file(path)
+        mime = Magic(magic_file="C:\Windows\System32\magic.mgc" ,mime=True).from_file(path)
         if "video" in mime:
             if mime == "video/x-matroska":
                 return [path]
@@ -116,6 +116,14 @@ def get_interface():
 
     return intf
 
+def follow(thefile):
+    thefile.seek(0,2)
+    while True:
+        line = thefile.readline()
+        if not line:
+            time.sleep(0.01)
+            continue
+        yield line
 
 class Animation:
     def __init__(self):

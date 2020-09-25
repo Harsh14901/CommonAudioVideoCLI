@@ -8,9 +8,10 @@ from multiprocessing import Process, Pool
 from multiprocessing.managers import BaseManager
 from itertools import product
 from termcolor import colored
+import colorama
 
-from server_comm import ServerConnection, set_vars
-from vlc_comm import player
+from server_comm import ServerConnection
+from vlc_comm import VLCplayer
 from util import get_videos, path2title, Animation
 from audio_extract import extract
 
@@ -68,7 +69,6 @@ def parse():
     args = parser.parse_args()
 
     videos = []
-
     for i in range(len(args.f)):
         args.f[i] = os.path.abspath(args.f[i])
         videos.extend(get_videos(args.f[i], TO_CLEAR))
@@ -93,35 +93,35 @@ def convert_async(paths):
 
 
 def exitHandler(*args, **kwargs):
-    os.system("killall node 2> /dev/null")
-    os.system("killall npm 2> /dev/null")
+    os.system('taskkill /IM "node.exe" /F')
     for file in TO_CLEAR:
-        if os.path.exists(file):
+        if os.path.exists(os.path.abspath(file)):
             try:
                 os.remove(file)
             except:
                 pass
 
-    sys.exit(0)
+    os.system(f"taskkill /F /PID {os.getpid()}")
 
 
 def spawn_server():
-    SERVER_PATH = "../../CommonAudioVideoServer/"
+    SERVER_PATH = os.path.abspath("../../CommonAudioVideoServer/")
 
     if not os.path.exists(SERVER_PATH):
         print(
-            f"[{colored('-','red')}] Invalid Server Path, Try {colored(reinstalling,'red')} the package"
+            f"[{colored('-','red')}] Invalid Server Path, Try {colored('reinstalling','red')} the package"
         )
         sys.exit(-1)
 
-    if not os.path.exists(SERVER_PATH + "node_modules"):
+    if not os.path.exists(SERVER_PATH + "\\node_modules"):
         print(f"[{colored('+','green')}] Configuring the server ..")
         anim = Animation()
         subprocess.Popen(
             "npm install".split(),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            cwd=os.getcwd() + "/" + SERVER_PATH,
+            cwd=SERVER_PATH,
+            shell=True,
         ).wait()
         anim.complete()
         print(f"[{colored('+','green')}] Server configuration complete ..")
@@ -133,7 +133,8 @@ def spawn_server():
             "npm run compile".split(),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            cwd=os.getcwd() + "/" + SERVER_PATH,
+            cwd=SERVER_PATH,
+            shell=True,
         ).wait()
         anim.complete()
         print(f"[{colored('+','green')}] Server build successfull ..")
@@ -144,7 +145,8 @@ def spawn_server():
         "npm start".split(),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=os.getcwd() + "/" + SERVER_PATH,
+        cwd=SERVER_PATH,
+        shell=True,
     )
     for line in iter(proc.stdout.readline, ""):
         if b"npm ERR!" in line:
@@ -152,15 +154,14 @@ def spawn_server():
             print(
                 f"[{colored('-','red')}] An error has occured while starting the server\nRestarting the server"
             )
-            os.system("killall node")
-            os.system("killall npm")
-            sys.exit(-1)
+            os.system('taskkill /IM "node.exe" /F')
+            os.system(f"taskkill /F /PID {os.getpid()}")
         if b"Press CTRL-C to stop" in line:
             anim.complete()
             break
 
 
-def initialize(videos, server, first=False):
+def initialize(player, videos, server, first=False):
     audio = convert_async(videos)
 
     for video in videos:
@@ -185,31 +186,41 @@ def initialize(videos, server, first=False):
 if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, exitHandler)
-
+    colorama.init()
     args = parse()
-    set_vars(args)
+    # set_vars(args)
 
     if not args.web:
         spawn_server()
+    # player = VLCplayer()
+    # player.launch(args.sub)
 
-    player.launch(args.sub)
-
+    BaseManager.register("VLCplayer", VLCplayer)
     BaseManager.register("ServerConnection", ServerConnection)
     manager = BaseManager()
     manager.start()
-    server = manager.ServerConnection()
+
+    player = manager.VLCplayer()
+    player.launch(args.sub)
+
+    server = manager.ServerConnection(args)
     server.start_listening()
 
-    Process(target=player.update, args=(server,)).start()
+    # server = ServerConnection()
+    # server.start_listening()
 
-    initialize([args.f[0]], server=server, first=True)
-
+    Process(target=player.update).start()
+    print("VLC logs parsing process started")
+    initialize(player,[args.f[0]], server=server, first=True)
+    print("Started conversion of first video file")
+    print(args.f)
     if len(args.f) > 1:
         Process(
             target=initialize,
-            kwargs={"videos": args.f[1:], "server": server, "first": False},
+            kwargs={"player":player,"videos": args.f[1:], "server": server, "first": False},
         ).run()
 
     print("\n" + colored("#" * 70, "green") + "\n")
     while True:
         time.sleep(1)
+        # print(player.getState())

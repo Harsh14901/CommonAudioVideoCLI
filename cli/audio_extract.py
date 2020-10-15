@@ -4,7 +4,9 @@ import os
 import subprocess
 import re
 from termcolor import colored
-
+from multiprocessing import Pool
+import time
+from itertools import product
 
 BITRATE = 1000 * 16
 
@@ -64,23 +66,7 @@ def extract(path, quality="medium"):
         )
         sys.exit(-1)
 
-    return output_path
-
-
-def get_duration(file):
-    file = os.path.abspath(file)
-    cmd = ("ffmpeg -i %s" % file).split()
-    cmd[2] = cmd[2].replace("%20", " ")
-
-    time_str = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()
-    try:
-        time_str = re.search('Duration: (.*), start', time_str[0].decode().replace('%20',' ')).groups()[0]
-        hours, minutes, seconds = time_str.split(':')
-        return int(hours)*3600 + int(minutes)*60 + float(seconds)
-    except Exception as e:
-        print(e)
-        return 0
-    
+    return output_path    
     
 
 def convert2mkv(path):
@@ -103,3 +89,18 @@ def convert2mkv(path):
             e,
         )
         raise e
+
+def convert_async(paths, args):
+    """ Converts video files to audio files asynchronously
+    using a pool of processes """
+    pool = Pool()
+    files = []
+    st = time.perf_counter()
+    print(f"[{colored('+','green')}] Extraction of audio started ...")
+    p = pool.starmap_async(extract, product(paths, [args.q]), callback=files.extend)
+
+    p.wait()
+    print(
+        f"[{colored('+','green')}] Completed extraction of {colored(len(paths),'yellow')} file(s) in {colored(time.perf_counter()-st,'yellow')} seconds"
+    )
+    return files

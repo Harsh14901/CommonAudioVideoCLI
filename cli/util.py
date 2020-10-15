@@ -1,50 +1,15 @@
 import time
 import os
-from select import select
 import pyqrcode
 import subprocess
 import re
 from magic import Magic
-from audio_extract import convert2mkv
+from audio_extract import convert2mkv, extract
 from termcolor import colored
 import threading
 import itertools
 import sys
-
-
-def wait_until_error(f, timeout=0.5):
-    """ Wait for timeout seconds until the function stops throwing any errors. """
-
-    def inner(*args, **kwargs):
-        st = time.perf_counter()
-        while time.perf_counter() - st < timeout or timeout < 0:
-            try:
-                return f(*args, **kwargs)
-            except Exception as e:
-                # print(e)
-                pass
-
-    return inner
-
-
-def send_until_writable(timeout=0.5):
-    """ This will send a message to the socket only when it is writable and wait for timeout seconds
-    for the socket to become writable, if the socket was busy. """
-
-    def inner(f, socket, message):
-        st = time.perf_counter()
-        while time.perf_counter() - st < timeout:
-            if check_writable(socket):
-                return f(message)
-
-    return inner
-
-
-def check_writable(socket):
-    """ Checks whether the socket is writable """
-
-    _, writable, _ = select([], [socket], [], 60)
-    return writable == [socket]
+import socket
 
 
 def print_url(url):
@@ -97,33 +62,75 @@ def path2title(path):
     return path.split("/")[-1:][0]
 
 
-def get_interface():
-    arp_details = subprocess.Popen(
-        "arp -a".split(), stdout=subprocess.PIPE
-    ).communicate()
-    arp_details = arp_details[0].decode().split("\n")[:-1]
 
-    intf = None
-    for detail in arp_details:
-        match = re.search("on (.*)$", detail)
-        if match is not None:
-            new_intf = match.groups()[0]
-            if intf is not None and intf != new_intf:
-                return input(f"[{colored('+','green')}] Enter the interface to use: ")
-            intf = new_intf
-    if intf is None:
-        return input(f"[{colored('+','green')}] Enter the interface to use: ")
+def getLocalIP():
+    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    
+    try:
+        sock.connect(('1.1.1.1',1000))
+        return sock.getsockname()[0]
+    except:
+        return input(f"[{colored('$','red')}] Unable to find IP address. Enter your local IP address: ")
+    
 
-    return intf
+def spawn_server(args):
+    SERVER_PATH = os.path.abspath("../../CommonAudioVideoServer/")
 
-def follow(thefile):
-    thefile.seek(0,2)
-    while True:
-        line = thefile.readline()
-        if not line:
-            time.sleep(0.01)
-            continue
-        yield line
+    if not os.path.exists(SERVER_PATH):
+        print(
+            f"[{colored('-','red')}] Invalid Server Path, Try {colored('reinstalling','red')} the package"
+        )
+        sys.exit(-1)
+
+    if not os.path.exists(SERVER_PATH + "\\node_modules"):
+        print(f"[{colored('+','green')}] Configuring the server ..")
+        anim = Animation()
+        subprocess.Popen(
+            "npm install".split(),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=SERVER_PATH,
+            shell=True,
+        ).wait()
+        anim.complete()
+        print(f"[{colored('+','green')}] Server configuration complete ..")
+
+    if args.rebuild:
+        print(f"[{colored('+','green')}] Building server ..")
+        anim = Animation()
+        subprocess.Popen(
+            "npm run compile".split(),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=SERVER_PATH,
+            shell=True,
+        ).wait()
+        anim.complete()
+        print(f"[{colored('+','green')}] Server build successfull ..")
+
+    print(f"[{colored('+','green')}] Initializing Server ..")
+    anim = Animation()
+    proc = subprocess.Popen(
+        "npm start".split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=SERVER_PATH,
+        shell=True,
+    )
+    for line in iter(proc.stdout.readline, ""):
+        if b"npm ERR!" in line:
+            print(colored(line, "red"))
+            print(
+                f"[{colored('-','red')}] An error has occured while starting the server\nRestarting the server"
+            )
+            os.system('taskkill /IM "node.exe" /F')
+            os.system(f"taskkill /F /PID {os.getpid()}")
+        if b"Press CTRL-C to stop" in line:
+            anim.complete()
+            break
+
+
+
 
 class Animation:
     def __init__(self):

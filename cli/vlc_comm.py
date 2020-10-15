@@ -164,6 +164,10 @@ def on_seek(match, state, server):
     else:
         state["position"] = int(match) / 1000
         state["last_updated"] = time.time()
+    # server.send("seek", state)
+
+def on_seek_complete(match, state, server):
+    state["last_updated"] = time.time()
     server.send("seek", state)
 
 
@@ -181,6 +185,7 @@ REGEX_DICT = {
     "toggling pause$": on_play,
     "main input debug: `file://(.*)' successfully opened": on_start,
     "dead input": on_stop,
+    "Stream buffering done": on_seek_complete,
 }
 
 

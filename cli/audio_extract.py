@@ -69,25 +69,26 @@ def extract(path, quality="medium"):
 
 
 def get_duration(file):
-    cmd = ("ffmpeg -i %s" % file).split()
-    cmd[2] = cmd[2].replace("%20", " ")
 
-    time_str = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ).communicate()
-    time_str = re.search(
-        "Duration: (.*), start", time_str[0].decode().replace("%20", " ")
-    ).groups()[0]
-    hours, minutes, seconds = time_str.split(":")
-    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+    cmd = ['ffmpeg','-i',file]
+
+    # time_str = subprocess.Popen(
+    #     cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    # ).communicate()
+    # time_str = re.search(
+    #     "Duration: (.*), start", time_str[0].decode().replace("%20", " ")
+    # ).groups()[0]
+    # hours, minutes, seconds = time_str.split(":")
+    # return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
 
     time_str = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()
     try:
-        time_str = re.search('Duration: (.*), start', time_str[0].decode().replace('%20',' ')).groups()[0]
+        time_str = re.search('Duration: (.*), start', time_str[0].decode()).groups()[0]
         hours, minutes, seconds = time_str.split(':')
         return int(hours)*3600 + int(minutes)*60 + float(seconds)
     except:
-        return 0
+        print(f"[{colored('-','red')}] Unable to fetch duration for file {unquote(file)}")
+        sys.exit(-1)
     
     
 

@@ -11,7 +11,7 @@ from termcolor import colored
 
 from server_comm import ServerConnection, set_vars
 from vlc_comm import player
-from util import get_videos, path2title, Animation
+from util import get_videos, path2title, Animation, getLocalIP
 from audio_extract import extract
 
 TO_CLEAR = ["cache", "invite_link.txt", "invite_link.svg"]
@@ -31,9 +31,6 @@ def parse():
         help="Path to video files or directory containing video files",
         type=str,
         action="append",
-    )
-    parser.add_argument(
-        "-s", "--sub", dest="sub", help="Load subtitle File", type=str, action="store"
     )
     parser.add_argument(
         "--qr", help="Show qr code with the link", dest="qr", action="store_true"
@@ -187,12 +184,13 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, exitHandler)
 
     args = parse()
+    args.localIP = getLocalIP()
     set_vars(args)
 
     if not args.web:
         spawn_server()
 
-    player.launch(args.sub)
+    player.launch()
 
     BaseManager.register("ServerConnection", ServerConnection)
     manager = BaseManager()

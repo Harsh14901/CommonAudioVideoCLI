@@ -10,6 +10,7 @@ from termcolor import colored
 import threading
 import itertools
 import sys
+import socket
 
 
 def wait_until_error(f, timeout=0.5):
@@ -97,24 +98,15 @@ def path2title(path):
     return path.split("/")[-1:][0]
 
 
-def get_interface():
-    arp_details = subprocess.Popen(
-        "arp -a".split(), stdout=subprocess.PIPE
-    ).communicate()
-    arp_details = arp_details[0].decode().split("\n")[:-1]
-
-    intf = None
-    for detail in arp_details:
-        match = re.search("on (.*)$", detail)
-        if match is not None:
-            new_intf = match.groups()[0]
-            if intf is not None and intf != new_intf:
-                return input(f"[{colored('+','green')}] Enter the interface to use: ")
-            intf = new_intf
-    if intf is None:
-        return input(f"[{colored('+','green')}] Enter the interface to use: ")
-
-    return intf
+def getLocalIP():
+    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    
+    try:
+        sock.connect(('1.1.1.1',1000))
+        return sock.getsockname()[0]
+    except:
+        return input(f"[{colored('$','red')}] Unable to find IP address. Enter your local IP address: ")
+    
 
 
 class Animation:

@@ -2,7 +2,7 @@ import socketio
 import time
 import psutil
 
-from util import path2title, get_interface
+from util import path2title
 from termcolor import colored
 
 SERVER_ADDR = "localhost"
@@ -57,10 +57,7 @@ class VLC_signals(socketio.ClientNamespace):
         if ARGS["web"]:
             url = url % (SERVER_ADDR, self.roomId)
         else:
-            addrs = psutil.net_if_addrs()
-            interface = get_interface()
-            local_addr = addrs[interface][0].address  # modify
-            url = url % (local_addr, self.roomId)
+            url = url % (ARGS["localIP"], self.roomId)
         from util import print_url
 
         print_url(url)
@@ -77,12 +74,6 @@ class ServerConnection:
         self.sio = socketio.Client()
         self.sio.connect("http://localhost:5000")
         self.tracks = {}
-
-        # For testing purposes...
-        # self.trackId = '5ed554389cd979784f6926e3'   # Bella-Caio
-        # self.trackId = '5ed88aae25f4787bea4cc07f'     # Dark
-        # self.trackId = '5ee350d3c67ae85cae6f669c'    # mha op
-
     def send(self, signal, data):
         """ Used to send data to the server with a corresponding signal"""
         self.sio.emit(signal, data)
@@ -136,3 +127,4 @@ def set_vars(args):
     ARGS["web"] = args.web
     ARGS["qr"] = args.qr
     ARGS["onlyHost"] = args.onlyHost
+    ARGS["localIP"] = args.localIP

@@ -115,7 +115,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def spawn_server():
-    os.system("killall CAV_server")
+    os.system("killall CAV_server > /dev/null 2>&1")
+    os.system("killall -9 vlc > /dev/null 2>&1")
     time.sleep(1)
     proc = subprocess.Popen(resource_path('CAV_server'),
         stdout=subprocess.PIPE,

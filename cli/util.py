@@ -10,6 +10,7 @@ import threading
 import itertools
 import sys
 import socket
+import colorama
 
 
 def print_url(url):
@@ -25,8 +26,8 @@ def print_qr(url):
     """ Prints a QR code using the URL that we received from the server. """
 
     image = pyqrcode.create(url)
-    image.svg("invite_link.svg", scale=1)
-    print(image.terminal(quiet_zone=1))
+    image.png('invite_link.png')
+    image.show()
 
 
 def get_videos(path, clear_files):
@@ -39,7 +40,7 @@ def get_videos(path, clear_files):
             else:
                 try:
                     print(
-                        f"[{colored('+','green')}] Converting {path2title(path)} to MKV",
+                        f"\n[{colored('+','green')}] Converting {path2title(path)} to MKV",
                         end="",
                     )
                     from audio_extract import convert2mkv

@@ -15,7 +15,7 @@ from audio_extract import convert_async
 from util import *
 
 
-TO_CLEAR = ["cache", "invite_link.txt", "invite_link.svg"]
+TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png"]
 
 
 def parse():
@@ -88,7 +88,9 @@ def initialize(videos, server, first=False):
 
 
 def exitHandler(*args, **kwargs):
-    os.system('taskkill /IM "node.exe" /F')
+    print(colored('Disconnected','red'))
+    print(colored('Exiting Now, Goodbye!', 'green'))
+    subprocess.call('taskkill /IM "node.exe" /F',shell= True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for file in TO_CLEAR:
         if os.path.exists(os.path.abspath(file)):
             try:
@@ -96,15 +98,15 @@ def exitHandler(*args, **kwargs):
             except:
                 pass
 
-    os.system(f"taskkill /F /PID {os.getpid()}")
+    subprocess.call(f"taskkill /F /PID {os.getpid()}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 if __name__ == "__main__":
 
-    # signal.signal(signal.SIGINT, exitHandler)
+    signal.signal(signal.SIGINT, exitHandler)
     colorama.init()
     args = parse()
 
-    # spawn_server(args)
+    server_process = spawn_server(args)
 
     server = ServerConnection(args)
 
@@ -113,5 +115,5 @@ if __name__ == "__main__":
         initialize(args.f[1:],server)
 
     print("\n" + colored("#" * 70, "green") + "\n")
-    while(True):
-        time.sleep(1)
+    # for line in iter(server_process.stdout.readline, ""):
+    #     print(line)

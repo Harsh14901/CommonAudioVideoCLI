@@ -128,7 +128,7 @@ def spawn_server(args):
             os.system(f"taskkill /F /PID {os.getpid()}")
         if b"Press CTRL-C to stop" in line:
             anim.complete()
-            break
+            return proc
 
 
 

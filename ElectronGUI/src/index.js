@@ -76,7 +76,7 @@ ipcMain.on("switch_page", (event, arg) => {
 });
 
 const runCLI = async (arg) => {
-  const commandArgs = [`${path.join(__dirname, "../../cli/main.py")}`];
+  const commandArgs = [`${path.join(__dirname, "../../cli/dist/LocalParty")}`];
   arg.files.forEach((file) => {
     commandArgs.push("-f");
     commandArgs.push(`${file}`);
@@ -89,7 +89,7 @@ const runCLI = async (arg) => {
     commandArgs.push("--qr");
   }
 
-  const pyCli = spawn("python3", commandArgs, {
+  const pyCli = spawn("party", commandArgs, {
     cwd: path.join(__dirname, "../../cli"),
     shell: true,
   });

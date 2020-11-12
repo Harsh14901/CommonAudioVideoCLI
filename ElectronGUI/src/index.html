@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Common Video Audio Connect</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+  </head>
+  <body>
+      <h1>Common Video Audio Connect</h1>
+      <p>Hello! This is the application to watch a video on a shared screen and sync audio on multiple devices.</p>
+      <button id="next">Next ></button>
+    <script>
+      const nextButton = document.querySelector('#next');
+      nextButton.addEventListener('click', (e) => {
+        const { ipcRenderer } = require('electron');
+        ipcRenderer.send('switch_page', 'file_select.html');
+      });
+    </script>
+  </body>
+</html>

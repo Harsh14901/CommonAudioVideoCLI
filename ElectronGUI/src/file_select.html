@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Common Video Audio Connect</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <h1>Common Video Audio Connect</h1>
+    <h2>File Selection</h2>
+    <form>
+        <label for="directorySelect"> Select a directory</label>
+        <input id="directorySelect" type="file" webkitdirectory onchange="handleFileSelect(event)">
+        <label for="fileSelect"> Select multiple files</label>
+        <input id="fileSelect" type="file" multiple onchange="handleFileSelect(event)">
+        <label for="onlyHost">Restrict playback access to host only!</label>
+        <input type="checkbox" name="onlyHost" id="onlyHost"> 
+       
+    </form>
+
+
+    <div id="selectedFiles" class="card">
+        <div class="card-header">
+            Selected Files 
+        </div>
+        <ul id="listFiles" class="list-group list-group-flush">
+            <li style="display: none;" id="ListItem" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <button id="back">< Back</button>
+    <button id="next">Next ></button>
+    <script>
+        const allFiles = [];
+        const handleFileSelect = (event) => {
+            const files = event.target.files;
+            Object.values(files).forEach((file) => {
+                console.log(file);
+                displayFileCard(file);
+                allFiles.push(file.path);
+            })
+        }
+        const displayFileCard = (file) => {
+            const node = document.querySelector('#ListItem');
+            const newLi = node.cloneNode(true);
+            newLi.style.display = "block";
+
+            newLi.firstElementChild.firstElementChild.innerText = file.name;
+            newLi.firstElementChild.firstElementChild.nextElementSibling.innerText = file.path;
+
+            document.querySelector('#listFiles').appendChild(newLi);
+        }
+        const { ipcRenderer } = require('electron');
+        const nextButton = document.querySelector('#next');
+        nextButton.addEventListener('click', (e) => {
+            const data = {
+                'files': allFiles,
+                'onlyHost': document.querySelector('#onlyHost').checked
+            }
+            ipcRenderer.send('start_cli', data);
+        });
+        const backButton = document.querySelector('#back');
+        backButton.addEventListener('click', (e) => {
+            ipcRenderer.send('switch_page', 'index.html')
+        });
+    </script>
+</body>
+
+</html>

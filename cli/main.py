@@ -16,7 +16,7 @@ from audio_extract import extract
 
 
 
-TO_CLEAR = ["cache", "invite_link.txt", "invite_link.svg"]
+TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png"]
 
 
 def parse():
@@ -115,7 +115,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def spawn_server():
-    os.system("killall CAV_server > /dev/null 2>&1")
+    # os.system("killall CAV_server > /dev/null 2>&1")
     os.system("killall -9 vlc > /dev/null 2>&1")
     time.sleep(1)
     proc = subprocess.Popen(resource_path('CAV_server'),
@@ -212,7 +212,23 @@ def initialize(videos, server, first=False):
 
 
 if __name__ == "__main__":
+    class Unbuffered(object):
+        def __init__(self, stream):
+            self.stream = stream
 
+        def write(self, data):
+            self.stream.write(data)
+            self.stream.flush()
+
+        def writelines(self, datas):
+            self.stream.writelines(datas)
+            self.stream.flush()
+
+        def __getattr__(self, attr):
+            return getattr(self.stream, attr)
+
+    import sys
+    sys.stdout = Unbuffered(sys.stdout)
     signal.signal(signal.SIGINT, exitHandler)
 
     args = parse()
@@ -241,5 +257,6 @@ if __name__ == "__main__":
         ).run()
 
     print("\n" + colored("#" * 70, "green") + "\n")
+    sys.stdout.flush()
     while True:
         time.sleep(1)

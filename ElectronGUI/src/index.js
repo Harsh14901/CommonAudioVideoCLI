@@ -2,7 +2,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { spawn } = require("child_process");
+const { spawn,exec } = require("child_process");
 const { stderr } = require("process");
 
 let pyCliStat = {
@@ -50,6 +50,8 @@ app.on("ready", createWindow);
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     if (pyCliStat.process) {
+      // console.log(pyCliStat.process.pid);
+      exec('killall LocalParty');
       pyCliStat.process.kill("SIGINT");
     }
     app.quit();
@@ -76,7 +78,7 @@ ipcMain.on("switch_page", (event, arg) => {
 });
 
 const runCLI = async (arg) => {
-  const commandArgs = [`${path.join(__dirname, "../../cli/dist/LocalParty")}`];
+  const commandArgs = [];
   arg.files.forEach((file) => {
     commandArgs.push("-f");
     commandArgs.push(`${file}`);
@@ -88,16 +90,17 @@ const runCLI = async (arg) => {
   if (arg.qr) {
     commandArgs.push("--qr");
   }
-
-  const pyCli = spawn("party", commandArgs, {
-    cwd: path.join(__dirname, "../../cli"),
+  console.log(commandArgs);
+  console.log(path.join(__dirname,__dirname, "../../cli/dist"));
+  const pyCli = spawn("./LocalParty", commandArgs, {
+    cwd: path.join(__dirname, "../../cli/dist"),
     shell: true,
   });
   pyCliStat.process = pyCli;
   pyCliStat.numInstances += 1;
 
   pyCli.stdout.on("data", (data) => {
-    console.log(data);
+    console.log(`${data}`);
     pyCliStat.stdout += data;
   });
 
@@ -108,10 +111,13 @@ const runCLI = async (arg) => {
 
   pyCli.on("error", (error) => {
     pyCliStat.error = error;
+    console.log(error);
   });
 
   pyCli.on("close", (code) => {
     console.log(`child process exited with code ${code}`);
+    console.log(pyCliStat.cwd);
+    // exec("killall LocalParty");
     pyCliStat = {
       process: null,
       running: false,
@@ -144,6 +150,8 @@ ipcMain.on("terminalOutput", (event, arg) => {
 ipcMain.on("killCLI", (event, arg) => {
   if (!pyCliStat.process) return;
   pyCliStat.process.kill();
+  exec("killall LocalParty");
+  console.log('killed')
   pyCliStat = {
     process: null,
     running: false,

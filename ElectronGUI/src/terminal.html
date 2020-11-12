@@ -4,27 +4,32 @@
 <head>
     <link rel="stylesheet" href="../node_modules/xterm/css/xterm.css" />
     <script src="../node_modules/xterm/lib/xterm.js"></script>
+    <script src="../node_modules/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
 </head>
 
 <body>
     <h1>Output for started process</h1>
-    <div id="terminal"></div>
+    <div style="width: 100%;height: 50%;" id="terminal"></div>
     <button id="killProcess">Kill process</button>
     <button id="back">< Back</button>
     <script>
         var term = new Terminal();
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
         term.open(document.getElementById('terminal'));
+        fitAddon.fit();
         const { ipcRenderer } = require('electron');
         let inter = setInterval(() => {
             ipcRenderer.send('terminalOutput');
         }, 1000);
 
         ipcRenderer.on('terminalOutput', (event, arg) => {
-            console.log(arg);
+            console.log(arg.toString());
             if(arg == "No process found"){
                 clearInterval(inter);
             }
-            term.write(arg);
+            arg = arg.replaceAll('\n','\n\r');
+            term.write(`\r${arg.toString()}`);
         })
 
         document.querySelector('#killProcess').addEventListener('click' , (e) => {

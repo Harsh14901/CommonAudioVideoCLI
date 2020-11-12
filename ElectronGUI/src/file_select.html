@@ -18,6 +18,8 @@
         <input id="fileSelect" type="file" multiple onchange="handleFileSelect(event)">
         <label for="onlyHost">Restrict playback access to host only!</label>
         <input type="checkbox" name="onlyHost" id="onlyHost"> 
+        <label for="qr">Display QR</label>
+        <input type="checkbox" name="qr" id="qr"> 
        
     </form>
 
@@ -63,9 +65,11 @@
         nextButton.addEventListener('click', (e) => {
             const data = {
                 'files': allFiles,
-                'onlyHost': document.querySelector('#onlyHost').checked
+                'onlyHost': document.querySelector('#onlyHost').checked,
+                'qr': document.querySelector('#qr').checked
             }
             ipcRenderer.send('start_cli', data);
+            ipcRenderer.send('switch_page', 'terminal.html');
         });
         const backButton = document.querySelector('#back');
         backButton.addEventListener('click', (e) => {

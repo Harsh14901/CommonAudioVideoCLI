@@ -14,6 +14,8 @@ from vlc_comm import player
 from util import get_videos, path2title, Animation, getLocalIP
 from audio_extract import extract
 
+
+
 TO_CLEAR = ["cache", "invite_link.txt", "invite_link.svg"]
 
 
@@ -92,6 +94,7 @@ def convert_async(paths):
 def exitHandler(*args, **kwargs):
     os.system("killall node 2> /dev/null")
     os.system("killall npm 2> /dev/null")
+    os.system("killall CAV_server")
     for file in TO_CLEAR:
         if os.path.exists(file):
             try:
@@ -101,47 +104,23 @@ def exitHandler(*args, **kwargs):
 
     sys.exit(0)
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def spawn_server():
-    SERVER_PATH = "../../CommonAudioVideoServer/"
-
-    if not os.path.exists(SERVER_PATH):
-        print(
-            f"[{colored('-','red')}] Invalid Server Path, Try {colored(reinstalling,'red')} the package"
-        )
-        sys.exit(-1)
-
-    if not os.path.exists(SERVER_PATH + "node_modules"):
-        print(f"[{colored('+','green')}] Configuring the server ..")
-        anim = Animation()
-        subprocess.Popen(
-            "npm install".split(),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            cwd=os.getcwd() + "/" + SERVER_PATH,
-        ).wait()
-        anim.complete()
-        print(f"[{colored('+','green')}] Server configuration complete ..")
-
-    if args.rebuild:
-        print(f"[{colored('+','green')}] Building server ..")
-        anim = Animation()
-        subprocess.Popen(
-            "npm run compile".split(),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            cwd=os.getcwd() + "/" + SERVER_PATH,
-        ).wait()
-        anim.complete()
-        print(f"[{colored('+','green')}] Server build successfull ..")
-
-    print(f"[{colored('+','green')}] Initializing Server ..")
-    anim = Animation()
-    proc = subprocess.Popen(
-        "npm start".split(),
+    os.system("killall CAV_server > /dev/null 2>&1")
+    os.system("killall -9 vlc > /dev/null 2>&1")
+    time.sleep(1)
+    proc = subprocess.Popen(resource_path('CAV_server'),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=os.getcwd() + "/" + SERVER_PATH,
     )
     for line in iter(proc.stdout.readline, ""):
         if b"npm ERR!" in line:
@@ -153,9 +132,62 @@ def spawn_server():
             os.system("killall npm")
             sys.exit(-1)
         if b"Press CTRL-C to stop" in line:
-            anim.complete()
+            # anim.complete()
             break
 
+    time.sleep(1)
+
+    # SERVER_PATH = "../../CommonAudioVideoServer/"
+    # if not os.path.exists(SERVER_PATH):
+    #     print(
+    #         f"[{colored('-','red')}] Invalid Server Path, Try {colored('reinstalling','red')} the package"
+    #     )
+    #     sys.exit(-1)
+
+    # if not os.path.exists(SERVER_PATH + "node_modules"):
+    #     print(f"[{colored('+','green')}] Configuring the server ..")
+    #     anim = Animation()
+    #     subprocess.Popen(
+    #         "npm install".split(),
+    #         stdout=subprocess.DEVNULL,
+    #         stderr=subprocess.DEVNULL,
+    #         cwd=os.getcwd() + "/" + SERVER_PATH,
+    #     ).wait()
+    #     anim.complete()
+    #     print(f"[{colored('+','green')}] Server configuration complete ..")
+
+    # if args.rebuild:
+    #     print(f"[{colored('+','green')}] Building server ..")
+    #     anim = Animation()
+    #     subprocess.Popen(
+    #         "npm run compile".split(),
+    #         stdout=subprocess.DEVNULL,
+    #         stderr=subprocess.DEVNULL,
+    #         cwd=os.getcwd() + "/" + SERVER_PATH,
+    #     ).wait()
+    #     anim.complete()
+    #     print(f"[{colored('+','green')}] Server build successfull ..")
+
+    # print(f"[{colored('+','green')}] Initializing Server ..")
+    # anim = Animation()
+    # proc = subprocess.Popen(
+    #     "npm start".split(),
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.STDOUT,
+    #     cwd=os.getcwd() + "/" + SERVER_PATH,
+    # )
+    # for line in iter(proc.stdout.readline, ""):
+    #     if b"npm ERR!" in line:
+    #         print(colored(line, "red"))
+    #         print(
+    #             f"[{colored('-','red')}] An error has occured while starting the server\nRestarting the server"
+    #         )
+    #         os.system("killall node")
+    #         os.system("killall npm")
+    #         sys.exit(-1)
+    #     if b"Press CTRL-C to stop" in line:
+    #         anim.complete()
+    #         break
 
 def initialize(videos, server, first=False):
     audio = convert_async(videos)

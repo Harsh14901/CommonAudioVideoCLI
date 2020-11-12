@@ -19,7 +19,7 @@ To run this project you need to have python 3.6 or higher installed
 - To run locally you will also need to clone the server repo in the same directory in which CommonAudioVideoCLI is.
 
 ```bash
-git clone https://github.com/Harsh14901/CommonAudioVideoServer.git local
+git clone https://github.com/devclub-iitd/CommonAudioVideoServer.git local
 ```
 
 - Installing dependencies
@@ -71,6 +71,14 @@ Socket events, both sent and received follow the same structure as shown above a
 - [subprocess](https://docs.python.org/3/library/subprocess.html) - issue bash commands from python and read VLC logs to catch play/pause events.
 - [socket-io Client](https://python-socketio.readthedocs.io/en/latest/) - websocket to connect and send signals to server
 - [socket](https://docs.python.org/3/library/socket.html) - tcp sockets to issue commands to VLC player
+
+
+## To Build
+- first build the CommonAudioVideoServer by running the npm script to generate a server binary. It should be named CAV_server
+- install requirements.txt and dev-requirements.txt
+- copy the server binary to cli/
+- run make
+- find the file in cli/dist/ and enjoy the Party
 
 ## License
 

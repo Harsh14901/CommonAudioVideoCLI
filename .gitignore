@@ -134,5 +134,6 @@ dmypy.json
 !*.secret
 cli/cache
 cache
-invite_link.svg
+invite_link.*
+LocalParty
 CAV_server

@@ -18,12 +18,12 @@
 
         <form>
             <label for="directorySelect" class="btn btn-outline-secondary">Select a directory</label>
-            <input style="visibility:hidden" id="directorySelect" type="file" webkitdirectory onchange="handleFileSelect(event)">
-            
+            <input style="visibility:hidden" id="directorySelect" type="file" webkitdirectory
+                onchange="handleFileSelect(event)">
+
             <label for="fileSelect" class="btn btn-outline-secondary"> Select multiple files</label>
             <input style="visibility:hidden" id="fileSelect" type="file" multiple onchange="handleFileSelect(event)">
-
-            <div class="form-check">
+            <div style="margin-top:5px" class="form-check">
                 <label for="onlyHost" class="form-check-label">
                     <input class="form-check-input" type="checkbox" name="onlyHost" id="onlyHost">Restrict playback
                     access to host only!
@@ -43,8 +43,15 @@
             <ul id="listFiles" class="list-group list-group-flush">
                 <li style="display: none;" id="ListItem" style="display: none;">
                     <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <div class="row">
+                            <div class="col-sm-1"><button onclick=clearFile(event) class="btn btn-outline-light"><img
+                                        style="height:40px" src="../icons/cross.png" alt=""></button>
+                            </div>
+                            <div class="col-sm-11">
+                                <h5 class="card-title">Card title</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                            </div>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -57,13 +64,25 @@
 
 
     <script>
+        function clearFile(e) {
+            let li = e.target.parentNode.parentNode.parentNode.parentNode;
+            console.log(li);
+            filePath = li.getElementsByTagName('h6')[0];
+            let index = allFiles.indexOf(filePath);
+            allFiles.splice(index);
+            li.parentNode.removeChild(li);
+
+        }
         const allFiles = [];
         const handleFileSelect = (event) => {
             const files = event.target.files;
             Object.values(files).forEach((file) => {
-                console.log(file);
-                displayFileCard(file);
-                allFiles.push(file.path);
+                if (file.type.startsWith('video')) {
+                    console.log(file);
+                    displayFileCard(file);
+                    allFiles.push(file.path);
+                }
+
             })
         }
         const displayFileCard = (file) => {
@@ -71,8 +90,8 @@
             const newLi = node.cloneNode(true);
             newLi.style.display = "block";
 
-            newLi.firstElementChild.firstElementChild.innerText = file.name;
-            newLi.firstElementChild.firstElementChild.nextElementSibling.innerText = file.path;
+            newLi.getElementsByTagName('h5')[0].innerText = file.name;
+            newLi.getElementsByTagName('h6')[0].innerText = file.path;
 
             document.querySelector('#listFiles').appendChild(newLi);
         }
@@ -81,13 +100,17 @@
         } = require('electron');
         const nextButton = document.querySelector('#next');
         nextButton.addEventListener('click', (e) => {
-            const data = {
-                'files': allFiles,
-                'onlyHost': document.querySelector('#onlyHost').checked,
-                'qr': document.querySelector('#qr').checked
+            if (allFiles.length <= 0) {
+                alert('Please select some videos to play');
+            } else {
+                const data = {
+                    'files': allFiles,
+                    'onlyHost': document.querySelector('#onlyHost').checked,
+                    'qr': document.querySelector('#qr').checked
+                }
+                ipcRenderer.send('start_cli', data);
+                ipcRenderer.send('switch_page', 'terminal.html');
             }
-            ipcRenderer.send('start_cli', data);
-            ipcRenderer.send('switch_page', 'terminal.html');
         });
         const backButton = document.querySelector('#back');
         backButton.addEventListener('click', (e) => {

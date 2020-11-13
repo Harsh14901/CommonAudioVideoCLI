@@ -95,6 +95,7 @@ def exitHandler(*args, **kwargs):
     os.system("killall node 2> /dev/null")
     os.system("killall npm 2> /dev/null")
     os.system("killall CAV_server")
+    os.system("killall -9 vlc")
     for file in TO_CLEAR:
         if os.path.exists(file):
             try:

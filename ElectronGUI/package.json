@@ -48,6 +48,8 @@
     "bootstrap": "^4.5.3",
     "electron": "^10.1.5",
     "electron-squirrel-startup": "^1.0.0",
+    "jquery": "^3.5.1",
+    "open": "^7.3.0",
     "xterm": "^4.9.0",
     "xterm-addon-fit": "^0.4.0"
   },

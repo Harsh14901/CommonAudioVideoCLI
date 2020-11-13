@@ -56,12 +56,12 @@ def print_url(url):
     f.write(url)
     f.close()
 
-
-def print_qr(url):
-    """ Prints a QR code using the URL that we received from the server. """
-
+def generate_qr(url):
     image = pyqrcode.create(url)
     image.png('invite_link.png')
+
+def print_qr():
+    """ Prints a QR code using the URL that we received from the server. """
     subprocess.Popen('xdg-open invite_link.png'.split())
 
 def get_videos(path, clear_files):

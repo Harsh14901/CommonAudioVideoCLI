@@ -4,42 +4,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Common Video Audio Connect</title>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
 </head>
 
 <body>
-    <h1>Common Video Audio Connect</h1>
-    <h2>File Selection</h2>
-    <form>
-        <label for="directorySelect"> Select a directory</label>
-        <input id="directorySelect" type="file" webkitdirectory onchange="handleFileSelect(event)">
-        <label for="fileSelect"> Select multiple files</label>
-        <input id="fileSelect" type="file" multiple onchange="handleFileSelect(event)">
-        <label for="onlyHost">Restrict playback access to host only!</label>
-        <input type="checkbox" name="onlyHost" id="onlyHost"> 
-        <label for="qr">Display QR</label>
-        <input type="checkbox" name="qr" id="qr"> 
-       
-    </form>
+    <div class="container-fluid">
+        <h1>Common Video Audio Connect</h1>
+        <h3>File Selection</h3><br>
 
+        <form>
+            <label for="directorySelect" class="btn btn-outline-secondary">Select a directory</label>
+            <input style="visibility:hidden" id="directorySelect" type="file" webkitdirectory onchange="handleFileSelect(event)">
+            
+            <label for="fileSelect" class="btn btn-outline-secondary"> Select multiple files</label>
+            <input style="visibility:hidden" id="fileSelect" type="file" multiple onchange="handleFileSelect(event)">
 
-    <div id="selectedFiles" class="card">
-        <div class="card-header">
-            Selected Files 
+            <div class="form-check">
+                <label for="onlyHost" class="form-check-label">
+                    <input class="form-check-input" type="checkbox" name="onlyHost" id="onlyHost">Restrict playback
+                    access to host only!
+                </label>
+            </div>
+            <div class="form-check">
+                <label for="qr" class="form-check-label">
+                    <input class="form-check-input" type="checkbox" name="qr" id="qr">Display QR
+                </label>
+            </div>
+        </form>
+        <br>
+        <div id="selectedFiles" class="card">
+            <div class="card-header">
+                Selected Files
+            </div>
+            <ul id="listFiles" class="list-group list-group-flush">
+                <li style="display: none;" id="ListItem" style="display: none;">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                    </div>
+                </li>
+            </ul>
         </div>
-        <ul id="listFiles" class="list-group list-group-flush">
-            <li style="display: none;" id="ListItem" style="display: none;">
-                <div class="card-body">
-                    <h5 class="card-title">Card title</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                </div>
-            </li>
-        </ul>
+        <br>
+        <button class="btn btn-secondary" id="back">
+            < Back</button> <button class="btn btn-success" id="next">Next >
+        </button>
     </div>
 
-    <button id="back">< Back</button>
-    <button id="next">Next ></button>
+
     <script>
         const allFiles = [];
         const handleFileSelect = (event) => {
@@ -60,7 +76,9 @@
 
             document.querySelector('#listFiles').appendChild(newLi);
         }
-        const { ipcRenderer } = require('electron');
+        const {
+            ipcRenderer
+        } = require('electron');
         const nextButton = document.querySelector('#next');
         nextButton.addEventListener('click', (e) => {
             const data = {

@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const { spawn,exec } = require("child_process");
 const { stderr } = require("process");
+const open = require("open");
 
 let pyCliStat = {
   process: null,
@@ -51,7 +52,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     if (pyCliStat.process) {
       // console.log(pyCliStat.process.pid);
-      exec('killall LocalParty');
+      exec('killall -2 LocalParty');
       pyCliStat.process.kill("SIGINT");
     }
     app.quit();
@@ -91,9 +92,8 @@ const runCLI = async (arg) => {
     commandArgs.push("--qr");
   }
   console.log(commandArgs);
-  console.log(path.join(__dirname,__dirname, "../../cli/dist"));
-  const pyCli = spawn("./LocalParty", commandArgs, {
-    cwd: path.join(__dirname, "../../cli/dist"),
+  const pyCli = spawn("cli/dist/LocalParty", commandArgs, {
+    cwd: path.join(__dirname, "../.."),
     shell: true,
   });
   pyCliStat.process = pyCli;
@@ -117,7 +117,7 @@ const runCLI = async (arg) => {
   pyCli.on("close", (code) => {
     console.log(`child process exited with code ${code}`);
     console.log(pyCliStat.cwd);
-    // exec("killall LocalParty");
+
     pyCliStat = {
       process: null,
       running: false,
@@ -146,11 +146,14 @@ ipcMain.on("terminalOutput", (event, arg) => {
   pyCliStat.stderr = "";
 });
 
+ipcMain.on('show_qr',(event) => {
+  open(path.join(__dirname,'../../invite_link.png'))
+})
 // eslint-disable-next-line no-unused-vars
 ipcMain.on("killCLI", (event, arg) => {
   if (!pyCliStat.process) return;
   pyCliStat.process.kill();
-  exec("killall LocalParty");
+  exec("killall -2 LocalParty");
   console.log('killed')
   pyCliStat = {
     process: null,

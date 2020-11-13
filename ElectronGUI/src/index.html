@@ -2,14 +2,21 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Common Video Audio Connect</title>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
   </head>
   <body>
+    <div class="container-fluid">
+      <!-- <div class=""></div> -->
       <h1>Common Video Audio Connect</h1>
       <p>Hello! This is the application to watch a video on a shared screen and sync audio on multiple devices.</p>
-      <button id="next">Next ></button>
+      <button class="btn btn-primary" id="next">Next ></button>
+    </div>
+      
     <script>
       const nextButton = document.querySelector('#next');
       nextButton.addEventListener('click', (e) => {

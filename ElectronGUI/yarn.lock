@@ -1179,6 +1179,11 @@
     "word-wrap" "^1.2.3"
     "yargs" "^15.1.0"
 
+"electron-is-dev@^1.2.0":
+  "integrity" "sha512-R1oD5gMBPS7PVU8gJwH6CtT0e6VSoD0+SzSnYpNm+dBkcijgA+K7VAMHDfnRq/lkKPZArpzplTW6jfiMYosdzw=="
+  "resolved" "https://registry.npmjs.org/electron-is-dev/-/electron-is-dev-1.2.0.tgz"
+  "version" "1.2.0"
+
 "electron-notarize@^1.0.0":
   "integrity" "sha512-dsib1IAquMn0onCrNMJ6gtEIZn/azG8hZMCYOuZIMVMUeRMgBYHK1s5TK9P8xAcrAjh/2aN5WYHzgVSWX314og=="
   "resolved" "https://registry.yarnpkg.com/electron-notarize/-/electron-notarize-1.0.0.tgz"

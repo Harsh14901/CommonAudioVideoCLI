@@ -5,6 +5,20 @@ const fs = require("fs");
 const { spawn, exec } = require("child_process");
 const { stderr } = require("process");
 const open = require("open");
+const isDev = require("electron-is-dev");
+
+const binary_dir = path.join(__dirname, "../binaries");
+
+let cache_dir;
+if (isDev) {
+  console.log("Running in development");
+  cache_dir = binary_dir;
+} else {
+  console.log("Running in production");
+  cache_dir = path.join(app.getPath("cache"), app.getName());
+}
+console.log("cache dir is", cache_dir);
+spawn("mkdir", ["-p", cache_dir]);
 
 let pyCliStat = {
   process: null,
@@ -92,8 +106,10 @@ const runCLI = async (arg) => {
     commandArgs.push("--qr");
   }
   console.log(commandArgs);
-  const pyCli = spawn("cli/dist/LocalParty", commandArgs, {
-    cwd: path.join(__dirname, "../.."),
+  const command = `${binary_dir.toString()}/LocalParty`;
+  console.log(command);
+  const pyCli = spawn(command, commandArgs, {
+    cwd: cache_dir,
     shell: true,
   });
   pyCliStat.process = pyCli;
@@ -148,7 +164,7 @@ ipcMain.on("terminalOutput", (event, arg) => {
 
 // eslint-disable-next-line no-unused-vars
 ipcMain.on("show_qr", (event) => {
-  open(path.join(__dirname, "../../invite_link.png"));
+  open(path.join(cache_dir, "invite_link.png"));
 });
 // eslint-disable-next-line no-unused-vars
 ipcMain.on("killCLI", (event, arg) => {

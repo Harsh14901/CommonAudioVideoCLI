@@ -58,7 +58,7 @@ def print_url(url):
 
 def generate_qr(url):
     image = pyqrcode.create(url)
-    image.png('invite_link.png')
+    image.png('invite_link.png', scale=10)
 
 def print_qr():
     """ Prints a QR code using the URL that we received from the server. """

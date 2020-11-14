@@ -62,7 +62,6 @@ class VLCplayer:  # Class that manages the VLC player instance on the machine.
 
     def enqueue(self, filePath):
         message = f"enqueue {filePath}\n".encode()
-        print(message)
         send_until_writable()(self.sock.sendall, self.sock, message)
         time.sleep(0.5)
 

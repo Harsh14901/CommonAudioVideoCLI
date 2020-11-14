@@ -16,7 +16,7 @@ from audio_extract import extract
 
 
 
-TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png"]
+TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png", "debug.log"]
 
 
 def parse():

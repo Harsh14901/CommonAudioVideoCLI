@@ -2,7 +2,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { spawn,exec } = require("child_process");
+const { spawn, exec } = require("child_process");
 const { stderr } = require("process");
 const open = require("open");
 
@@ -52,7 +52,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     if (pyCliStat.process) {
       // console.log(pyCliStat.process.pid);
-      exec('killall -2 LocalParty');
+      exec("killall -2 LocalParty");
       pyCliStat.process.kill("SIGINT");
     }
     app.quit();
@@ -82,7 +82,7 @@ const runCLI = async (arg) => {
   const commandArgs = [];
   arg.files.forEach((file) => {
     commandArgs.push("-f");
-    commandArgs.push(`${file}`);
+    commandArgs.push(`'${file}'`);
   });
   if (arg.onlyHost) {
     commandArgs.push("--only-host");
@@ -146,15 +146,16 @@ ipcMain.on("terminalOutput", (event, arg) => {
   pyCliStat.stderr = "";
 });
 
-ipcMain.on('show_qr',(event) => {
-  open(path.join(__dirname,'../../invite_link.png'))
-})
+// eslint-disable-next-line no-unused-vars
+ipcMain.on("show_qr", (event) => {
+  open(path.join(__dirname, "../../invite_link.png"));
+});
 // eslint-disable-next-line no-unused-vars
 ipcMain.on("killCLI", (event, arg) => {
   if (!pyCliStat.process) return;
   pyCliStat.process.kill();
   exec("killall -2 LocalParty");
-  console.log('killed')
+  console.log("CLI killed");
   pyCliStat = {
     process: null,
     running: false,

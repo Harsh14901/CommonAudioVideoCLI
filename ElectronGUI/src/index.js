@@ -180,3 +180,13 @@ ipcMain.on("killCLI", (event, arg) => {
     error: null,
   };
 });
+
+// eslint-disable-next-line no-unused-vars
+ipcMain.on("show_video", (event, arg) => {
+  const streamLink = fs.readFileSync(path.join(cache_dir, "invite_link.txt"), {
+    encoding: "utf-8",
+    flag: "r",
+  });
+  const hostLink = streamLink.replace("client", "host");
+  open(hostLink);
+});

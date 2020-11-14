@@ -2,10 +2,11 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { spawn, exec } = require("child_process");
+const { spawn } = require("child_process");
 const { stderr } = require("process");
 const open = require("open");
 const isDev = require("electron-is-dev");
+const kill = require("tree-kill");
 
 const binary_dir = path.join(__dirname, "../binaries");
 
@@ -65,9 +66,7 @@ app.on("ready", createWindow);
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     if (pyCliStat.process) {
-      // console.log(pyCliStat.process.pid);
-      exec("killall -2 LocalParty");
-      pyCliStat.process.kill("SIGINT");
+      kill(pyCliStat.process.pid);
     }
     app.quit();
   }
@@ -132,7 +131,6 @@ const runCLI = async (arg) => {
 
   pyCli.on("close", (code) => {
     console.log(`child process exited with code ${code}`);
-    console.log(pyCliStat.cwd);
 
     pyCliStat = {
       process: null,
@@ -169,9 +167,10 @@ ipcMain.on("show_qr", (event) => {
 // eslint-disable-next-line no-unused-vars
 ipcMain.on("killCLI", (event, arg) => {
   if (!pyCliStat.process) return;
-  pyCliStat.process.kill();
-  exec("killall -2 LocalParty");
+
+  kill(pyCliStat.process.pid);
   console.log("CLI killed");
+
   pyCliStat = {
     process: null,
     running: false,

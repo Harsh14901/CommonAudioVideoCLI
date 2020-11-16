@@ -25,7 +25,7 @@ class VLCplayer:  # Class that manages the VLC player instance on the machine.
     def launch(self):
         """ Launches a VLC instance """
 
-        bashCommand = "vlc --extraintf rc --rc-host localhost:%d -vv" % (self.port)
+        bashCommand = "vlc --extraintf rc --rc-host localhost:%d -vv --one-instance" % (self.port)
 
         # Start a subprocess to execute the VLC command
         self.proc = subprocess.Popen(

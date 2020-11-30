@@ -4,7 +4,8 @@ from select import select
 import pyqrcode
 import subprocess
 import re
-from magic import Magic
+# from magic import Magic
+import filetype
 from audio_extract import convert2mkv
 from termcolor import colored
 import threading
@@ -67,9 +68,9 @@ def print_qr():
 def get_videos(path, clear_files):
 
     if os.path.isfile(path):
-        mime = Magic(mime=True).from_file(path)
-        if "video" in mime:
-            if mime == "video/x-matroska":
+        kind = filetype.guess(path)
+        if kind and "video" in kind.mime:
+            if kind.mime == "video/x-matroska":
                 return [path]
             else:
                 try:

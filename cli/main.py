@@ -4,7 +4,7 @@ import signal
 import time
 import os
 import subprocess
-from multiprocessing import Process, Pool
+from multiprocessing import Process, Pool, freeze_support
 from multiprocessing.managers import BaseManager
 
 from termcolor import colored
@@ -102,6 +102,8 @@ def exitHandler(*args, **kwargs):
 
 if __name__ == "__main__":
 
+    freeze_support()
+    
     signal.signal(signal.SIGINT, exitHandler)
     colorama.init()
     args = parse()

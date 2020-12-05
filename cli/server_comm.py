@@ -31,10 +31,11 @@ class VLC_signals(socketio.ClientNamespace):
 
         print_url(url)
         if self.ARGS["qr"]:
-            from util import print_qr
+            from util import print_qr,generate_qr
 
             print(f"\n[{colored('$','blue')}] Or scan the QR code given below")
-            print_qr(url)
+            generate_qr(url)
+            # print_qr()
 
 
 class ServerConnection:

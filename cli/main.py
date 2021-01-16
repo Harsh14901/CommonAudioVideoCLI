@@ -15,7 +15,7 @@ from audio_extract import convert_async
 from util import *
 
 
-TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png"]
+TO_CLEAR = ["cache", "invite_link.txt", "invite_link.png", "debug.log"]
 
 
 def parse():

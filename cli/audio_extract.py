@@ -98,7 +98,7 @@ def convert_async(paths, args):
         st = time.perf_counter()
         print(f"\n[{colored('+','green')}] Extraction of audio started ...")
         p = pool.starmap_async(extract, product(paths, [args.q]), callback=files.extend)
-        print('will wait')
+        
         p.wait()
         print(
             f"[{colored('+','green')}] Completed extraction of {colored(len(paths),'yellow')} file(s) in {colored(time.perf_counter()-st,'yellow')} seconds"

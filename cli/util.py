@@ -85,7 +85,10 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def spawn_server(args):
-    os.system('taskkill /IM "CAV_server.exe" /F')
+    try:
+        subprocess.Popen('taskkill /IM "CAV_server.exe" /F', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
+    except:
+        pass
     time.sleep(1)
 
     proc = subprocess.Popen(resource_path('CAV_server.exe'),

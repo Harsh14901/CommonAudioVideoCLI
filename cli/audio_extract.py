@@ -3,7 +3,11 @@ import sys
 import os
 import subprocess
 import re
+import time
+
 from termcolor import colored
+from itertools import product
+from multiprocessing import Pool
 
 
 BITRATE = 1000 * 16
@@ -72,14 +76,6 @@ def get_duration(file):
 
     cmd = ['ffmpeg','-i',file]
 
-    # time_str = subprocess.Popen(
-    #     cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    # ).communicate()
-    # time_str = re.search(
-    #     "Duration: (.*), start", time_str[0].decode().replace("%20", " ")
-    # ).groups()[0]
-    # hours, minutes, seconds = time_str.split(":")
-    # return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
 
     time_str = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()
     try:
@@ -112,3 +108,18 @@ def convert2mkv(path):
             e,
         )
         raise e
+
+def convert_async(paths, args):
+    """ Converts video files to audio files asynchronously
+    using a pool of processes """
+    files = []
+    with Pool() as pool:
+        st = time.perf_counter()
+        print(f"\n[{colored('+','green')}] Extraction of audio started ...")
+        p = pool.starmap_async(extract, product(paths, [args.q]), callback=files.extend)
+        
+        p.wait()
+        print(
+            f"[{colored('+','green')}] Completed extraction of {colored(len(paths),'yellow')} file(s) in {colored(time.perf_counter()-st,'yellow')} seconds"
+        )
+    return files

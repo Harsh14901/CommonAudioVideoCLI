@@ -1,17 +1,30 @@
 import time
 import os
-from select import select
 import pyqrcode
-import subprocess
-import re
-# from magic import Magic
 import filetype
-from audio_extract import convert2mkv
-from termcolor import colored
 import threading
 import itertools
 import sys
 import socket
+
+from select import select
+from termcolor import colored
+
+import win_util
+import linux_util
+
+def nop(*args, **kwargs):
+    pass
+
+def platform_dependent( *args, linux=nop, windows=nop, osx=nop, **kwargs):
+    if(sys.platform == 'linux' or sys.platform == 'linux2'):
+        return linux(*args, **kwargs)
+    elif (sys.platform == 'darwin'):
+        return osx(*args, **kwargs)
+    elif(sys.platform == 'win32'):
+        return windows(*args, **kwargs)
+    else:
+        return nop(*args, **kwargs)
 
 
 def wait_until_error(f, timeout=0.5):
@@ -63,7 +76,36 @@ def generate_qr(url):
 
 def print_qr():
     """ Prints a QR code using the URL that we received from the server. """
-    subprocess.Popen('xdg-open invite_link.png'.split())
+    # NOTE add for mac osx
+    platform_dependent(linux=linux_util.print_qr, windows=win_util.print_qr)
+
+
+def path2title(path):
+    return path.split("/")[-1:][0]
+
+
+def getLocalIP():
+    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    
+    try:
+        sock.connect(('1.1.1.1',1000))
+        return sock.getsockname()[0]
+    except:
+        return input(f"[{colored('$','red')}] Unable to find IP address. Enter your local IP address: ")
+    
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def spawn_server():
+    return platform_dependent(linux=linux_util.spawn_server, windows=win_util.spawn_server)
+
 
 def get_videos(path, clear_files):
 
@@ -94,21 +136,6 @@ def get_videos(path, clear_files):
         return ans
 
 
-def path2title(path):
-    return path.split("/")[-1:][0]
-
-
-def getLocalIP():
-    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    
-    try:
-        sock.connect(('1.1.1.1',1000))
-        return sock.getsockname()[0]
-    except:
-        return input(f"[{colored('$','red')}] Unable to find IP address. Enter your local IP address: ")
-    
-
-
 class Animation:
     def __init__(self):
         self.done = False
@@ -127,3 +154,18 @@ class Animation:
     def complete(self):
         self.done = True
         sys.stdout.write("\b..Done!\n")
+
+class Unbuffered(object):
+        def __init__(self, stream):
+            self.stream = stream
+
+        def write(self, data):
+            self.stream.write(data)
+            self.stream.flush()
+
+        def writelines(self, datas):
+            self.stream.writelines(datas)
+            self.stream.flush()
+
+        def __getattr__(self, attr):
+            return getattr(self.stream, attr)
